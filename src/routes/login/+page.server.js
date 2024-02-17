@@ -30,5 +30,11 @@ export const actions = {
 		} else if (res.role === 'cashier') {
 			redirect(303, '/new-order');
 		}
+	},
+
+	logout: async ({ cookies }) => {
+		cookies.delete('accessToken', { path: '/' });
+		cookies.delete('role', { path: '/' });
+		redirect(303, '/login');
 	}
 };
