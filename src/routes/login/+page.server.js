@@ -21,7 +21,13 @@ export const actions = {
 		} catch (error) {
 			if (error instanceof AxiosError) {
 				const message = error?.response?.data.error.message;
+				if (!message) {
+					return fail(500, { errorMessage: 'Internal Server error' });
+				}
+
 				return fail(400, { errorMessage: message });
+			} else {
+				return fail(500, { errorMessage: 'Internal Server error' });
 			}
 		}
 

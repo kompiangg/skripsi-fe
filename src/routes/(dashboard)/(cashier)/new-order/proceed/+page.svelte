@@ -1,6 +1,4 @@
 <script>
-  let itemID = '';
-
   /**
 	 * @type {any[]}
 	 */
@@ -12,13 +10,19 @@
   $: totalPrice = order.reduce((acc, item) => acc + item.price, 0);
 </script>
 
-<h1>New Order</h1>
+<p>Back</p>
+
+<h1>Payment</h1>
 
 <div>
-  <p>Item ID/Item Name</p>
   <div>
-    <input type="text" />
-    <button>Add Item</button>
+    <h2>Payment Method</h2>
+    <input type="text" name="payment-method" id="payment-method">
+  </div>
+
+  <div>
+    <h2>Member Information</h2>
+    <input type="text" name="member-information" id="member-information">
   </div>
 </div>
 
@@ -43,7 +47,6 @@
             <td>{item.price * item.quantity}</td>
           </tr>
         {/each}
-      </tbody>
     </table>
   </div>
 </div>
