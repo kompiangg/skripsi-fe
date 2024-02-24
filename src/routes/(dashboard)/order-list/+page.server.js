@@ -1,13 +1,6 @@
 /** @type {import('./$types').PageServerLoad} */
-export async function load() {
+export async function load({ cookies }) {
 	return {
-		orders: [
-			{
-				id: '123',
-				totalQuantity: '',
-				localTotalPrice: '',
-				orderDate: ''
-			}
-		]
+		accessToken: cookies.get('accessToken')
 	};
 }
