@@ -11,10 +11,14 @@
   let promise
   let order = {}
 
-  promise = new Promise((resolve) => {
+  promise = new Promise((resolve, reject) => {
     onMount(async () => {
-      order = await getOrderDetails(data.slug, data.accessToken)
-      resolve()
+      try {
+        order = await getOrderDetails(data.slug, data.accessToken)
+        resolve()
+      } catch (error) {
+        reject(error)
+      }
     })
   })
 </script>
@@ -120,4 +124,6 @@
       </div>
     </div>
   </div>
+{:catch error}
+  <p>{error.message}</p>
 {/await}
