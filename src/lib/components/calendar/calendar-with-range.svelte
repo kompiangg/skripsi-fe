@@ -14,7 +14,7 @@
   import TimePicker from "./time-picker.svelte";
 	import { env } from "$env/dynamic/public";
 
-  export let value: DateRange | undefined;
+  export let value: DateRange;
   export const startTimeValue = { hour: 0, minute: 0 };
   export const endTimeValue = { hour: 23, minute: 59 };
 
@@ -22,8 +22,11 @@
     dateStyle: "medium"
   });
 
-  let startValue: DateValue | undefined = undefined;
   let maxValue: DateValue = new CalendarDate(Number(env.PUBLIC_CUSTOM_CURRENT_YEAR), Number(env.PUBLIC_CUSTOM_CURRENT_MONTH), Number(env.PUBLIC_CUSTOM_CURRENT_DAY));
+
+  $: if (!value.end) {
+    value.end = value.start;
+  }
 </script>
 
 <div class="grid gap-2">
@@ -44,12 +47,8 @@
               value.end.toDate(getLocalTimeZone())
             )} {`${endTimeValue.hour}`.padStart(2, '0')}:{`${endTimeValue.minute}`.padStart(2, '0')}
           {:else}
-            {df.format(value.start.toDate(getLocalTimeZone()))}
+            {df.format(value.start.toDate(getLocalTimeZone()))} 
           {/if}
-        {:else if startValue}
-          {df.format(startValue.toDate(getLocalTimeZone()))} {`${startTimeValue.hour}`.padStart(2, '0')}:{`${startTimeValue.minute}`.padStart(2, '0')} - {df.format(
-            startValue.toDate(getLocalTimeZone())
-          )} {`${endTimeValue.hour}`.padStart(2, '0')}:{`${endTimeValue.minute}`.padStart(2, '0')}
         {:else}
           Pick a date
         {/if}
@@ -58,7 +57,7 @@
     <Popover.Content class="w-auto p-0" align="start">
       <RangeCalendar
         bind:value
-        bind:startValue={startValue}
+        bind:startValue={value.start}
         placeholder={value?.start}
         initialFocus
         numberOfMonths={2}
