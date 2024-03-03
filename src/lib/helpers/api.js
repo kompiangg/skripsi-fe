@@ -8,3 +8,11 @@ export const authAPI = axios.create({
 export const servingServiceAPI = axios.create({
 	baseURL: env.PUBLIC_SERVING_SERVICE
 });
+
+export const generalServiceAPI = axios.create({
+	baseURL: env.PUBLIC_GENERAL_SERVICE
+});
+
+export const ingestionServiceAPI = axios.create({
+	baseURL: env.PUBLIC_INGESTION_SERVICE
+});

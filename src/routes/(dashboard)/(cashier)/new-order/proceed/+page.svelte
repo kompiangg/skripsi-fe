@@ -1,34 +1,73 @@
 <script>
+// @ts-nocheck
+
   import { ordersStore } from "@/stores/orders";
   import Calendar from "@/components/calendar/calendar.svelte";
 	import { CalendarDate, Time } from "@internationalized/date";
   import * as Dialog from "$lib/components/ui/dialog";
-  import { Button, buttonVariants } from "$lib/components/ui/button";
+  import { Button } from "$lib/components/ui/button";
+  import { getPaymentMethod, getMembers } from "$lib/service/generalService";
+  import { createOrder } from "$lib/service/ingestionService";
 	import { goto } from "$app/navigation";
-  /**
-	 * @type {any[]}
-	 */
+  import Select from 'svelte-select';
+	import dayjs from "dayjs";
+
+  export let data;
+
   let orders = $ordersStore;
   let totalQuantity = 0;
   let totalPrice = 0;
-
-  let paymentMethod = '';
-  let memberInformation = '';
-
+  
   let dateValue = new CalendarDate(2023, 12, 31);
   let timeValue = new Time(12, 58, 0);
+  
+  let orderID = '';
+  let paymentMethod = null;
+  let paymentMethods = null;
+  let memberInformation = null;
+  let memberInformations = null;
 
   $: totalQuantity = orders.reduce((acc, item) => acc + item.quantity, 0);
-  $: totalPrice = orders.reduce((acc, item) => acc + Number(item.price.split(' ')[1]), 0);
-
-  let orderID = '';
+  $: totalPrice = orders.reduce((acc, item) => acc + Number(item.price), 0);
 
   async function pay() {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    let memberInformationID = null;
 
-    orderID = '752abafb-d8cd-4923-a113-11ac4c77dde9'
+    if (memberInformation) {
+      memberInformationID = memberInformation.id
+    }
+
+    const accessToken = data.accessToken;
+
+    const paidOrder = await createOrder(
+      orders,
+      data.accountInfo.id,
+      paymentMethod.id,
+      memberInformationID,
+      dayjs(`${dateValue.year}-${dateValue.month}-${dateValue.day} ${timeValue.hour}:${timeValue.minute}:${timeValue.second}`).format('YYYY-MM-DDTHH:mm:ssZ'),
+      "AFN",
+      accessToken
+    );
+    
+    orderID = paidOrder[0].id;
+
+    return;
+  }
+
+  async function loadPaymentMethod(filterText) {
+    paymentMethods = await getPaymentMethod(filterText);
+    return paymentMethods
+  }
+
+  async function loadMemberInformation(filterText) {
+    memberInformations = await getMembers(filterText);
+    return memberInformations;
   }
 </script>
+
+<svelte:head>
+  <title>Proceed New Order</title>
+</svelte:head>
 
 <div class="flex flex-col gap-8 px-10 py-[60px]">
   <h3>Payment</h3>
@@ -36,12 +75,40 @@
   <div class="flex justify-between gap-x-28">
     <div class="flex flex-col gap-y-2 w-full">
       <h4>Payment Method</h4>
-      <input class="w-full h-[60%]" placeholder="Payment Method" type="text" name="payment-method" id="payment-method">
+      <div class="bg-white w-full h-full  rounded-lg">
+        <Select class="w-full text-black" loadOptions={loadPaymentMethod} itemId="id" placeholder="Payment Method" bind:value={paymentMethod}>
+          <div slot="item" let:item let:index>
+            <div class="flex items-center gap-x-2">
+              <p>{item.id} - {item.type} {item.bank == "None" ? "" : `- ${item.bank}`}</p>
+            </div>
+          </div>
+
+          <div slot="selection" let:selection>
+            <div class="flex items-center gap-x-2">
+              <p>{selection.id} - {selection.type} {selection.bank == "None" ? "" : `- ${selection.bank}`}</p>
+            </div>
+          </div>
+        </Select>
+      </div>
     </div>
   
     <div class="flex flex-col gap-y-2 w-full">
       <h4>Member Information</h4>
-      <input class="w-full h-[60%]" placeholder="Member Information" type="text" name="member-information" id="member-information">
+      <div class="bg-white w-full h-full  rounded-lg">
+        <Select class="w-full text-black" loadOptions={loadMemberInformation} itemId="id" placeholder="Member Information" bind:value={memberInformation}>
+          <div slot="item" let:item let:index>
+            <div class="flex items-center gap-x-2">
+              <p>{item.id} - {item.name} - {item.contact}</p>
+            </div>
+          </div>
+
+          <div slot="selection" let:selection>
+            <div class="flex items-center gap-x-2">
+              <p>{selection.id} - {selection.name} - {selection.contact}</p>
+            </div>
+          </div>
+        </Select>
+      </div>
     </div>
   </div>
 
@@ -78,9 +145,9 @@
             {#each orders as order}
               <tr>
                 <td class="py-2 text-left">{order.name}</td>
-                <td class="py-2">{order.price}</td>
+                <td class="py-2">{order.currency} {order.price}</td>
                 <td class="py-2">{order.quantity}</td>
-                <td class="py-2 text-right">AFN {order.price.split(' ')[1] * order.quantity}</td>
+                <td class="py-2 text-right">{order.currency} {order.price * order.quantity}</td>
               </tr>
             {/each}
           {/if}

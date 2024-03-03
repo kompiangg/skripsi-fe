@@ -23,6 +23,10 @@
   })
 </script>
 
+<svelte:head>
+  <title>Order Details</title>
+</svelte:head>
+
 {#await promise}
   <Loading />
 {:then _}
@@ -76,7 +80,7 @@
         <div class="flex flex-col w-full justify-between">
           <div class="flex w-full justify-between">
             <subtle>Customer ID</subtle>
-            <subtle>{order.customer_id}</subtle>
+            <subtle>{order.customer_id ? order.customer_id : "Not a member"}</subtle>
           </div>
         
           <div class="flex w-full justify-between">

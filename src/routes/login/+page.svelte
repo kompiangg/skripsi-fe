@@ -10,6 +10,10 @@
   let errorMessage = '';
 </script>
 
+<svelte:head>
+  <title>Login Page</title>
+</svelte:head>
+
 <div class="bg-slate-200 h-screen">
   <div class="flex self-center h-screen justify-center items-center">
     <div class="bg-slate-50 gap-y-14 flex flex-col py-24 px-20 rounded-lg">

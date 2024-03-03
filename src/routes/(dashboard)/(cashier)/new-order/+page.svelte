@@ -2,49 +2,60 @@
   // @ts-nocheck
 	import { goto } from "$app/navigation";
   import { ordersStore } from "@/stores/orders";
-
-  let itemID = '';
+  import { getItemByLikeNameOrID } from "@/service/generalService";
+  import Select from 'svelte-select';
 
   let orders = $ordersStore;
-
   let totalQuantity = 0;
   let totalPrice = 0;
   let currency = 'AFN';
   let isAddItemDisable = true;
-  let itemInput = '';
+  let item = null;
 
-  $: totalQuantity = orders.reduce((acc, item) => acc + item.quantity, 0);
-  $: totalPrice = orders.reduce((acc, item) => acc + Number(item.price.split(' ')[1]) * item.quantity, 0);
+  $: totalQuantity = orders.reduce((acc, item) => acc + Number(item.quantity), 0);
+  $: totalPrice = orders.reduce((acc, item) => acc + Number(item.price) * Number(item.quantity), 0);
+  $: {
+    if (item) {
+      isAddItemDisable = false;
+    }
+  }
 
   function addItem() {
     orders = [
       ...orders,
       {
-        name: 'Item 2',
-        price: 'AFN 10',
-        quantity: 2
+        id : item.id,
+        name: item.name,
+        currency: currency,
+        price: item.price,
+        quantity: 1
       }
     ];
 
     ordersStore.set(orders);
 
-    itemInput = '';
+    item = null;
     isAddItemDisable = true;
   }
 
   function deleteItem(event) {
     const idx = event.target.getAttribute('aria-label');
-    orders = orders.filter((_, i) => i != idx);
+    deleteItemByIndex(idx)
   }
 
-  let timeout;
+  function deleteItemByIndex(idx) {
+    orders = orders.filter((_, i) => i != idx);
+    ordersStore.set(orders);
+  }
 
-  function handleItemIDInput(event) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      itemID = event.target.value;
-      isAddItemDisable = false;
-    }, 500);
+  async function loadOptions(filterText) {
+    const items = await getItemByLikeNameOrID(filterText);
+
+    if (!orders.length) {
+      return items;
+    }
+
+    return items.filter(i => !orders.find(o => o.id === i.id));
   }
 
   function proceed() {
@@ -52,13 +63,31 @@
   }
 </script>
 
+<svelte:head>
+  <title>Create New Order</title>
+</svelte:head>
+
 <div class="flex flex-col gap-8 px-10 py-[60px]">
   <h3>New Order</h3>
   
   <div class="flex flex-col gap-2">
     <p>Item ID/Item Name</p>
     <div class="flex gap-x-5">
-      <input class="w-[90%]" placeholder="Input Item ID/Item Name" type="text" bind:value={itemInput} on:input={handleItemIDInput} />
+      <div class="bg-white w-full h-full  rounded-lg">
+        <Select class="w-[90%] text-black" {loadOptions} itemId="id" placeholder="Input Item ID/Item Name" bind:value={item}>
+          <div slot="item" let:item let:index>
+            <div class="flex items-center gap-x-2">
+              <p>{item.id} - {item.name}</p>
+            </div>
+          </div>
+
+          <div slot="selection" let:selection>
+            <div class="flex items-center gap-x-2">
+              <p>{selection.id} - {selection.name}</p>
+            </div>
+          </div>
+        </Select>
+      </div>
       <button id='add-item' class="bg-black text-white px-4 rounded-lg disabled:bg-slate-600 hover:bg-slate-900 w-[10%]" on:click={addItem} disabled={isAddItemDisable}>Add Item</button>
     </div>
   </div>
@@ -88,8 +117,16 @@
             <tr>
               <td class="py-2 text-left">{order.name}</td>
               <td class="py-2">{order.price}</td>
-              <td class="py-2">{order.quantity}</td>
-              <td class="py-2">{currency} {order.price.split(' ')[1] * order.quantity}</td>
+              <td class="py-2 flex items-center justify-center gap-x-3">
+                <div  class="flex items-center">
+                  <button aria-label={idx} on:click={() => {order.quantity <= 1 ? deleteItemByIndex(idx) : order.quantity--}}>-</button>
+                </div>
+                {order.quantity}
+                <div class="flex items-center">
+                  <button aria-label={idx} class="pb-[1px]" on:click={() => {order.quantity++}}>+</button>
+                </div>
+              </td>
+              <td class="py-2">{currency} {order.price * order.quantity}</td>
               <td class="py-2 text-right">
                 <button aria-label={idx} class="underline text-red-600" on:click={deleteItem}>Delete</button>
               </td>

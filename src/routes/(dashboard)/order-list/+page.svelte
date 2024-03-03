@@ -54,6 +54,10 @@
   }
 </script>
 
+<svelte:head>
+  <title>Order List</title>
+</svelte:head>
+
 <div class="py-10 px-10 flex flex-col gap-y-8">
   <h3>Order List</h3>
 
