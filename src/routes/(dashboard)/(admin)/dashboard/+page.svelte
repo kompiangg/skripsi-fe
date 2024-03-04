@@ -6,6 +6,8 @@
   import { Chart } from 'chart.js/auto';
 	import dayjs from 'dayjs';
 	import { onMount } from 'svelte';
+  import * as Select from "$lib/components/ui/select";
+	import numeral from 'numeral';
 
   export let data;
 
@@ -73,10 +75,12 @@
 
   const insightNumber = {
     totalOrder: '0',
-    totalIncome: '0',
+    totalIncome: 'USD 0',
     orderFromMember: '0',
     orderFromNotMember:'0'
   }
+
+  let qParam = '1w'
 
   promise = new Promise((resolve, reject) => {
     onMount(async () => {
@@ -131,35 +135,7 @@
           }
         });
 
-        dashboardData = await getDashboard('1w', dayjs().utcOffset()/60, data.accessToken);
-
-        insightNumber.totalOrder = dashboardData.totalOrder;
-        insightNumber.totalIncome = dashboardData.totalIncome;
-        insightNumber.orderFromMember = `${dashboardData.orderFromMember}/${dashboardData.orderFromMember + dashboardData.orderFromNotMember}`;
-        insightNumber.orderFromNotMember = `${dashboardData.orderFromNotMember}/${dashboardData.orderFromMember + dashboardData.orderFromNotMember}`;
-
-
-        linearChartLabel.push(...dashboardData.linearChart.map(data => dayjs(data.date).format('DD MMM')));
-        linearChartData[0].data.push(...dashboardData.linearChart.map(data => Number(data.total_order_quantity)));
-        linearChartData[1].data.push(...dashboardData.linearChart.map(data => Number(data.total_order_price)));
-
-        doughnutChartData[0].data.push(...dashboardData.doughnutChart.map(data => data.quantity));
-        doughnutChartData[0].backgroundColor.push(...dashboardData.doughnutChart.map(data => data.color));
-        doughnutLabels = [...dashboardData.doughnutChart.map(data => data.itemName)]
-
-        doughnutData = dashboardData.doughnutChart.map(data => {
-          return {
-            itemName: data.itemName,
-            itemID: data.itemID,
-            quantity: data.quantity,
-            percentage: data.percentage,
-            color: data.color
-          }
-        });
-
-        totalItemSoldLinearChart.update();
-        totalItemSoldPriceLinearChart.update();
-        doughnutChart.update();
+        await refreshData();
 
         resolve();
       } catch (error) {
@@ -167,6 +143,54 @@
       }
     })
   })
+
+  async function refreshData() {
+    try {
+      dashboardData = await getDashboard(qParam, dayjs().utcOffset()/60, data.accessToken);
+
+      insightNumber.totalOrder = numeral(dashboardData.totalOrder).format('0,0');
+      insightNumber.totalIncome = `USD ${numeral(dashboardData.totalIncome).format('0,0.00')}`;
+      insightNumber.orderFromMember = `${dashboardData.orderFromMember}/${dashboardData.orderFromMember + dashboardData.orderFromNotMember}`;
+      insightNumber.orderFromNotMember = `${dashboardData.orderFromNotMember}/${dashboardData.orderFromMember + dashboardData.orderFromNotMember}`;
+
+      linearChartLabel = dashboardData.linearChart.map(data => dayjs(data.date).format('DD MMM'));
+
+      linearChartData[0].data = [];
+      linearChartData[0].data.push(...dashboardData.linearChart.map(data => Number(data.total_order_quantity)));
+      totalItemSoldLinearChart.data.labels = linearChartLabel;
+      
+      linearChartData[1].data = [];
+      linearChartData[1].data.push(...dashboardData.linearChart.map(data => Number(data.total_order_price)));
+      totalItemSoldPriceLinearChart.data.labels = linearChartLabel;
+
+      doughnutChartData[0].data = [];
+      doughnutChartData[0].data.push(...dashboardData.doughnutChart.map(data => data.quantity));
+
+      doughnutChartData[0].backgroundColor = [];
+      doughnutChartData[0].backgroundColor.push(...dashboardData.doughnutChart.map(data => data.color));
+
+      doughnutLabels = []
+      doughnutLabels = [...dashboardData.doughnutChart.map(data => data.itemName)]
+
+      doughnutData = dashboardData.doughnutChart.map(data => {
+        return {
+          itemName: data.itemName,
+          itemID: data.itemID,
+          quantity: data.quantity,
+          percentage: data.percentage,
+          color: data.color
+        }
+      });
+
+      totalItemSoldLinearChart.update();
+      totalItemSoldPriceLinearChart.update();
+      doughnutChart.update();
+
+      return dashboardData;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 </script>
 
 <svelte:head>
@@ -174,9 +198,27 @@
 </svelte:head>
 
 <div class="py-10 px-10 flex flex-col gap-y-8">
-  <div>
-    <h2>Hi, Admin!</h2>
-    <p>Let's check your store today!</p>
+  <div class="flex justify-between">
+    <div>
+      <h2>Hi, Admin!</h2>
+      <p>Let's check your store today!</p>
+    </div>
+
+    <div>
+      <Select.Root onSelectedChange={(v)=>{
+        qParam = v.value;
+        refreshData();
+      }}>
+        <Select.Trigger class="w-[180px]">
+          <Select.Value placeholder="1 Week"/>
+        </Select.Trigger>
+        <Select.Content>
+          <Select.Item value="1w" >1 Week</Select.Item>
+          <Select.Item value="1m">1 Month</Select.Item>
+          <Select.Item value="3m">3 Month</Select.Item>
+        </Select.Content>
+      </Select.Root>      
+    </div>
   </div>
 
   <div>
