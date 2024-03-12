@@ -25,24 +25,6 @@
 
   let dashboardData;
 
-  // let doughnutData = [{
-  //   label: 'Red',
-  //   value: 300,
-  //   color: 'rgb(255, 99, 132)'
-  // }, {
-  //   label: 'Blue',
-  //   value: 50,
-  //   color: 'rgb(54, 162, 235)'
-  // }, {
-  //   label: 'Yellow',
-  //   value: 100,
-  //   color: 'rgb(255, 205, 86)'
-  // }, {
-  //   label: 'Other',
-  //   value: 150,
-  //   color: 'rgb(211,211,211)'
-  // }];
-
   let linearChartData = [
     {
       label: "Total Item Sold",
@@ -60,7 +42,7 @@
   ]
   let doughnutChartData = [
     {
-      label: "datasets",
+      label: "",
       data: [],
       backgroundColor: [],
       hoverOffset: 4
@@ -213,7 +195,7 @@
           <Select.Value placeholder="1 Week"/>
         </Select.Trigger>
         <Select.Content>
-          <Select.Item value="1w" >1 Week</Select.Item>
+          <Select.Item value="1w">1 Week</Select.Item>
           <Select.Item value="1m">1 Month</Select.Item>
           <Select.Item value="3m">3 Month</Select.Item>
         </Select.Content>
@@ -248,7 +230,7 @@
     
         <div class="w-[50%] flex flex-col justify-center gap-y-12">
           <div class="flex gap-x-12 h-full center">
-            <DashboardCard title="Total Order" bind:value={insightNumber.totalOrder}/>
+            <DashboardCard title="Total Sold Item" bind:value={insightNumber.totalOrder}/>
             <DashboardCard title="Total Income" bind:value={insightNumber.totalIncome}/>
           </div>
           <div class="flex gap-x-12 h-full center">

@@ -48,7 +48,7 @@
         </div>
         <div class="border-r-[1px] border-r-slate-700 px-5">
           <subtle>Total Quantity</subtle>
-          <p class="font-bold">{order.total_unit}</p>
+          <p class="font-bold">{order.total_quantity}</p>
         </div>
         <div class="border-r-[1px] border-r-slate-700 px-5">
           <subtle>USD Rate</subtle>
