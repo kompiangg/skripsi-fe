@@ -52,7 +52,7 @@
         </div>
         <div class="border-r-[1px] border-r-slate-700 px-5">
           <subtle>USD Rate</subtle>
-          <p class="font-bold">{order.usd_rate} {order.currency}/USD</p>
+          <p class="font-bold">{order.usd_rate} USD/{order.currency}</p>
         </div>
         <div class="border-r-slate-700 px-5">
           <subtle>Total Price in USD</subtle>

@@ -8,7 +8,7 @@
   let orders = $ordersStore;
   let totalQuantity = 0;
   let totalPrice = 0;
-  let currency = 'AFN';
+  let currency = 'BDT';
   let isAddItemDisable = true;
   let item = null;
 

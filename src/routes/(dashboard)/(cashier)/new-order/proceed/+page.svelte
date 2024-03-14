@@ -45,7 +45,6 @@
       paymentMethod.id,
       memberInformationID,
       dayjs(`${dateValue.year}-${dateValue.month}-${dateValue.day} ${timeValue.hour}:${timeValue.minute}:${timeValue.second}`).format('YYYY-MM-DDTHH:mm:ssZ'),
-      "AFN",
       accessToken
     );
     
@@ -164,7 +163,7 @@
       </div>
       <div class="flex w-full justify-between">
         <p>Total Price</p>
-        <p>AFN {totalPrice}</p>
+        <p>BDT {totalPrice}</p>
       </div>
     </div>
   
